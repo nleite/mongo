@@ -29,7 +29,6 @@ namespace mongo {
     class BSONObjBuilder;
     class Builder;
     class Document;
-    class MutableDocument;
     class DocumentSource;
     class ExpressionContext;
     class Value;
@@ -77,7 +76,8 @@ namespace mongo {
 
           @returns the computed value
         */
-        virtual Value evaluate(const Document& pDocument) const = 0;
+        virtual intrusive_ptr<const Value> evaluate(
+            const intrusive_ptr<Document> &pDocument) const = 0;
 
         /*
           Add the Expression (and any descendant Expressions) into a BSON
@@ -94,9 +94,9 @@ namespace mongo {
             $project which distinguish between field inclusion and virtual
             field specification;  See ExpressionConstant.
          */
-        virtual void addToBsonObj(BSONObjBuilder *pBuilder,
-                                  StringData fieldName,
-                                  bool requireExpression) const = 0;
+        virtual void addToBsonObj(
+            BSONObjBuilder *pBuilder, const std::string& fieldName,
+            bool requireExpression) const = 0;
 
         /*
           Add the Expression (and any descendant Expressions) into a BSON
@@ -223,9 +223,9 @@ namespace mongo {
     public:
         // virtuals from Expression
         virtual intrusive_ptr<Expression> optimize();
-        virtual void addToBsonObj(BSONObjBuilder *pBuilder,
-                                  StringData fieldName,
-                                  bool requireExpression) const;
+        virtual void addToBsonObj(
+            BSONObjBuilder *pBuilder, const std::string& fieldName,
+            bool requireExpression) const;
         virtual void addToBsonArray(BSONArrayBuilder *pBuilder) const;
         virtual void addDependencies(set<string>& deps, vector<string>* path=NULL) const;
 
@@ -313,7 +313,7 @@ namespace mongo {
     public:
         // virtuals from Expression
         virtual ~ExpressionAdd();
-        virtual Value evaluate(const Document& pDocument) const;
+        virtual intrusive_ptr<const Value> evaluate(const intrusive_ptr<Document> &pDocument) const;
         virtual const char *getOpName() const;
 
         // virtuals from ExpressionNary
@@ -334,7 +334,8 @@ namespace mongo {
         // virtuals from Expression
         virtual ~ExpressionAnd();
         virtual intrusive_ptr<Expression> optimize();
-        virtual Value evaluate(const Document& pDocument) const;
+        virtual intrusive_ptr<const Value> evaluate(
+            const intrusive_ptr<Document> &pDocument) const;
         virtual const char *getOpName() const;
         virtual void toMatcherBson(BSONObjBuilder *pBuilder) const;
 
@@ -364,10 +365,11 @@ namespace mongo {
         virtual ~ExpressionCoerceToBool();
         virtual intrusive_ptr<Expression> optimize();
         virtual void addDependencies(set<string>& deps, vector<string>* path=NULL) const;
-        virtual Value evaluate(const Document& pDocument) const;
-        virtual void addToBsonObj(BSONObjBuilder *pBuilder,
-                                  StringData fieldName,
-                                  bool requireExpression) const;
+        virtual intrusive_ptr<const Value> evaluate(
+            const intrusive_ptr<Document> &pDocument) const;
+        virtual void addToBsonObj(
+            BSONObjBuilder *pBuilder, const std::string& fieldName,
+            bool requireExpression) const;
         virtual void addToBsonArray(BSONArrayBuilder *pBuilder) const;
 
         static intrusive_ptr<ExpressionCoerceToBool> create(
@@ -386,7 +388,8 @@ namespace mongo {
         // virtuals from ExpressionNary
         virtual ~ExpressionCompare();
         virtual intrusive_ptr<Expression> optimize();
-        virtual Value evaluate(const Document& pDocument) const;
+        virtual intrusive_ptr<const Value> evaluate(
+            const intrusive_ptr<Document> &pDocument) const;
         virtual const char *getOpName() const;
         virtual void addOperand(const intrusive_ptr<Expression> &pExpression);
 
@@ -419,7 +422,8 @@ namespace mongo {
     public:
         // virtuals from ExpressionNary
         virtual ~ExpressionCond();
-        virtual Value evaluate(const Document& pDocument) const;
+        virtual intrusive_ptr<const Value> evaluate(
+            const intrusive_ptr<Document> &pDocument) const;
         virtual const char *getOpName() const;
         virtual void addOperand(const intrusive_ptr<Expression> &pExpression);
 
@@ -437,29 +441,31 @@ namespace mongo {
         virtual ~ExpressionConstant();
         virtual intrusive_ptr<Expression> optimize();
         virtual void addDependencies(set<string>& deps, vector<string>* path=NULL) const;
-        virtual Value evaluate(const Document& pDocument) const;
+        virtual intrusive_ptr<const Value> evaluate(
+            const intrusive_ptr<Document> &pDocument) const;
         virtual const char *getOpName() const;
-        virtual void addToBsonObj(BSONObjBuilder *pBuilder,
-                                  StringData fieldName,
-                                  bool requireExpression) const;
+        virtual void addToBsonObj(
+            BSONObjBuilder *pBuilder, const std::string& fieldName,
+            bool requireExpression) const;
         virtual void addToBsonArray(BSONArrayBuilder *pBuilder) const;
 
         static intrusive_ptr<ExpressionConstant> createFromBsonElement(
             BSONElement *pBsonElement);
-        static intrusive_ptr<ExpressionConstant> create(const Value& pValue);
+        static intrusive_ptr<ExpressionConstant> create(
+            const intrusive_ptr<const Value> &pValue);
 
         /*
           Get the constant value represented by this Expression.
 
           @returns the value
          */
-        Value getValue() const;
+        intrusive_ptr<const Value> getValue() const;
 
     private:
         ExpressionConstant(BSONElement *pBsonElement);
-        ExpressionConstant(const Value& pValue);
+        ExpressionConstant(const intrusive_ptr<const Value> &pValue);
 
-        Value pValue;
+        intrusive_ptr<const Value> pValue;
     };
 
 
@@ -468,7 +474,8 @@ namespace mongo {
     public:
         // virtuals from ExpressionNary
         virtual ~ExpressionDayOfMonth();
-        virtual Value evaluate(const Document& pDocument) const;
+        virtual intrusive_ptr<const Value> evaluate(
+            const intrusive_ptr<Document> &pDocument) const;
         virtual const char *getOpName() const;
         virtual void addOperand(const intrusive_ptr<Expression> &pExpression);
 
@@ -484,7 +491,8 @@ namespace mongo {
     public:
         // virtuals from ExpressionNary
         virtual ~ExpressionDayOfWeek();
-        virtual Value evaluate(const Document& pDocument) const;
+        virtual intrusive_ptr<const Value> evaluate(
+            const intrusive_ptr<Document> &pDocument) const;
         virtual const char *getOpName() const;
         virtual void addOperand(const intrusive_ptr<Expression> &pExpression);
 
@@ -500,7 +508,8 @@ namespace mongo {
     public:
         // virtuals from ExpressionNary
         virtual ~ExpressionDayOfYear();
-        virtual Value evaluate(const Document& pDocument) const;
+        virtual intrusive_ptr<const Value> evaluate(
+            const intrusive_ptr<Document> &pDocument) const;
         virtual const char *getOpName() const;
         virtual void addOperand(const intrusive_ptr<Expression> &pExpression);
 
@@ -516,7 +525,8 @@ namespace mongo {
     public:
         // virtuals from ExpressionNary
         virtual ~ExpressionDivide();
-        virtual Value evaluate(const Document& pDocument) const;
+        virtual intrusive_ptr<const Value> evaluate(
+            const intrusive_ptr<Document> &pDocument) const;
         virtual const char *getOpName() const;
         virtual void addOperand(const intrusive_ptr<Expression> &pExpression);
 
@@ -534,10 +544,11 @@ namespace mongo {
         virtual ~ExpressionFieldPath();
         virtual intrusive_ptr<Expression> optimize();
         virtual void addDependencies(set<string>& deps, vector<string>* path=NULL) const;
-        virtual Value evaluate(const Document& pDocument) const;
-        virtual void addToBsonObj(BSONObjBuilder *pBuilder,
-                                  StringData fieldName,
-                                  bool requireExpression) const;
+        virtual intrusive_ptr<const Value> evaluate(
+            const intrusive_ptr<Document> &pDocument) const;
+        virtual void addToBsonObj(
+            BSONObjBuilder *pBuilder, const std::string& fieldName,
+            bool requireExpression) const;
         virtual void addToBsonArray(BSONArrayBuilder *pBuilder) const;
 
         /*
@@ -588,9 +599,9 @@ namespace mongo {
           @param pDocument current document traversed to (not the top-level one)
           @returns the field found; could be an array
          */
-        Value evaluatePath(
+        intrusive_ptr<const Value> evaluatePath(
             size_t index, const size_t pathLength, 
-            Document pDocument) const;
+            intrusive_ptr<Document> pDocument) const;
 
         FieldPath fieldPath;
     };
@@ -603,10 +614,11 @@ namespace mongo {
         virtual ~ExpressionFieldRange();
         virtual intrusive_ptr<Expression> optimize();
         virtual void addDependencies(set<string>& deps, vector<string>* path=NULL) const;
-        virtual Value evaluate(const Document& pDocument) const;
-        virtual void addToBsonObj(BSONObjBuilder *pBuilder,
-                                  StringData fieldName,
-                                  bool requireExpression) const;
+        virtual intrusive_ptr<const Value> evaluate(
+            const intrusive_ptr<Document> &pDocument) const;
+        virtual void addToBsonObj(
+            BSONObjBuilder *pBuilder, const std::string& fieldName,
+            bool requireExpression) const;
         virtual void addToBsonArray(BSONArrayBuilder *pBuilder) const;
         virtual void toMatcherBson(BSONObjBuilder *pBuilder) const;
 
@@ -632,7 +644,7 @@ namespace mongo {
          */
         static intrusive_ptr<ExpressionFieldRange> create(
             const intrusive_ptr<ExpressionFieldPath> &pFieldPath,
-            CmpOp cmpOp, const Value& pValue);
+            CmpOp cmpOp, const intrusive_ptr<const Value> &pValue);
 
         /*
           Add an intersecting range.
@@ -647,30 +659,30 @@ namespace mongo {
           @param cmpOp the comparison operator
           @param pValue the value to compare against
          */
-        void intersect(CmpOp cmpOp, const Value& pValue);
+        void intersect(CmpOp cmpOp, const intrusive_ptr<const Value> &pValue);
 
     private:
         ExpressionFieldRange(const intrusive_ptr<ExpressionFieldPath> &pFieldPath,
                              CmpOp cmpOp,
-                             const Value& pValue);
+                             const intrusive_ptr<const Value> &pValue);
 
         intrusive_ptr<ExpressionFieldPath> pFieldPath;
 
         class Range {
         public:
-            Range(CmpOp cmpOp, const Value& pValue);
+            Range(CmpOp cmpOp, const intrusive_ptr<const Value> &pValue);
             Range(const Range &rRange);
 
             Range *intersect(const Range *pRange) const;
-            bool contains(const Value& pValue) const;
+            bool contains(const intrusive_ptr<const Value> &pValue) const;
 
-            Range(const Value& pBottom, bool bottomOpen,
-                  const Value& pTop, bool topOpen);
+            Range(const intrusive_ptr<const Value> &pBottom, bool bottomOpen,
+                  const intrusive_ptr<const Value> &pTop, bool topOpen);
 
             bool bottomOpen;
             bool topOpen;
-            Value pBottom;
-            Value pTop;
+            intrusive_ptr<const Value> pBottom;
+            intrusive_ptr<const Value> pTop;
         };
 
         scoped_ptr<Range> pRange;
@@ -693,7 +705,8 @@ namespace mongo {
     public:
         // virtuals from ExpressionNary
         virtual ~ExpressionHour();
-        virtual Value evaluate(const Document& pDocument) const;
+        virtual intrusive_ptr<const Value> evaluate(
+            const intrusive_ptr<Document> &pDocument) const;
         virtual const char *getOpName() const;
         virtual void addOperand(const intrusive_ptr<Expression> &pExpression);
 
@@ -709,7 +722,8 @@ namespace mongo {
     public:
         // virtuals from ExpressionNary
         virtual ~ExpressionIfNull();
-        virtual Value evaluate(const Document& pDocument) const;
+        virtual intrusive_ptr<const Value> evaluate(
+            const intrusive_ptr<Document> &pDocument) const;
         virtual const char *getOpName() const;
         virtual void addOperand(const intrusive_ptr<Expression> &pExpression);
 
@@ -725,7 +739,8 @@ namespace mongo {
     public:
         // virtuals from ExpressionNary
         virtual ~ExpressionMinute();
-        virtual Value evaluate(const Document& pDocument) const;
+        virtual intrusive_ptr<const Value> evaluate(
+            const intrusive_ptr<Document> &pDocument) const;
         virtual const char *getOpName() const;
         virtual void addOperand(const intrusive_ptr<Expression> &pExpression);
 
@@ -741,7 +756,8 @@ namespace mongo {
     public:
         // virtuals from ExpressionNary
         virtual ~ExpressionMod();
-        virtual Value evaluate(const Document& pDocument) const;
+        virtual intrusive_ptr<const Value> evaluate(
+            const intrusive_ptr<Document> &pDocument) const;
         virtual const char *getOpName() const;
         virtual void addOperand(const intrusive_ptr<Expression> &pExpression);
 
@@ -757,7 +773,8 @@ namespace mongo {
     public:
         // virtuals from Expression
         virtual ~ExpressionMultiply();
-        virtual Value evaluate(const Document& pDocument) const;
+        virtual intrusive_ptr<const Value> evaluate(
+            const intrusive_ptr<Document> &pDocument) const;
         virtual const char *getOpName() const;
 
         // virtuals from ExpressionNary
@@ -780,7 +797,8 @@ namespace mongo {
     public:
         // virtuals from ExpressionNary
         virtual ~ExpressionMonth();
-        virtual Value evaluate(const Document& pDocument) const;
+        virtual intrusive_ptr<const Value> evaluate(
+            const intrusive_ptr<Document> &pDocument) const;
         virtual const char *getOpName() const;
         virtual void addOperand(const intrusive_ptr<Expression> &pExpression);
 
@@ -796,7 +814,8 @@ namespace mongo {
     public:
         // virtuals from ExpressionNary
         virtual ~ExpressionNot();
-        virtual Value evaluate(const Document& pDocument) const;
+        virtual intrusive_ptr<const Value> evaluate(
+            const intrusive_ptr<Document> &pDocument) const;
         virtual const char *getOpName() const;
         virtual void addOperand(const intrusive_ptr<Expression> &pExpression);
 
@@ -816,10 +835,11 @@ namespace mongo {
         virtual bool isSimple();
         virtual void addDependencies(set<string>& deps, vector<string>* path=NULL) const;
         /** Only evaluates non inclusion expressions.  For inclusions, use addToDocument(). */
-        virtual Value evaluate(const Document& pDocument) const;
-        virtual void addToBsonObj(BSONObjBuilder *pBuilder,
-                                  StringData fieldName,
-                                  bool requireExpression) const;
+        virtual intrusive_ptr<const Value> evaluate(
+            const intrusive_ptr<Document> &pDocument) const;
+        virtual void addToBsonObj(
+            BSONObjBuilder *pBuilder, const std::string& fieldName,
+            bool requireExpression) const;
         virtual void addToBsonArray(BSONArrayBuilder *pBuilder) const;
 
         /*
@@ -829,7 +849,8 @@ namespace mongo {
           @param pDocument the input Document
           @returns the result document
          */
-        Document evaluateDocument(const Document& pDocument) const;
+        intrusive_ptr<Document> evaluateDocument(
+            const intrusive_ptr<Document> &pDocument) const;
 
         /*
           evaluate(), but add the evaluated fields to a given document
@@ -839,9 +860,9 @@ namespace mongo {
           @param pDocument the input Document for this level
           @param rootDoc the root of the whole input document
          */
-        void addToDocument(MutableDocument& pResult,
-                           const Document& pDocument,
-                           const Document& rootDoc
+        void addToDocument(const intrusive_ptr<Document>& pResult,
+                           const intrusive_ptr<Document>& pDocument,
+                           const intrusive_ptr<Document>& rootDoc
                           ) const;
 
         // estimated number of fields that will be output
@@ -970,7 +991,8 @@ namespace mongo {
         // virtuals from Expression
         virtual ~ExpressionOr();
         virtual intrusive_ptr<Expression> optimize();
-        virtual Value evaluate(const Document& pDocument) const;
+        virtual intrusive_ptr<const Value> evaluate(
+            const intrusive_ptr<Document> &pDocument) const;
         virtual const char *getOpName() const;
         virtual void toMatcherBson(BSONObjBuilder *pBuilder) const;
 
@@ -998,7 +1020,8 @@ namespace mongo {
     public:
         // virtuals from ExpressionNary
         virtual ~ExpressionSecond();
-        virtual Value evaluate(const Document& pDocument) const;
+        virtual intrusive_ptr<const Value> evaluate(
+            const intrusive_ptr<Document> &pDocument) const;
         virtual const char *getOpName() const;
         virtual void addOperand(const intrusive_ptr<Expression> &pExpression);
 
@@ -1014,7 +1037,8 @@ namespace mongo {
     public:
         // virtuals from ExpressionNary
         virtual ~ExpressionStrcasecmp();
-        virtual Value evaluate(const Document& pDocument) const;
+        virtual intrusive_ptr<const Value> evaluate(
+            const intrusive_ptr<Document> &pDocument) const;
         virtual const char *getOpName() const;
         virtual void addOperand(const intrusive_ptr<Expression> &pExpression);
 
@@ -1024,13 +1048,29 @@ namespace mongo {
         ExpressionStrcasecmp();
     };
 
+    class ExpressionSplit :
+        public ExpressionNary {
+    public:
+        // virtuals from ExpressionNary
+        virtual ~ExpressionSplit();
+        virtual intrusive_ptr<const Value> evaluate(const intrusive_ptr<Document> &pDocument) const;
+        virtual const char *getOpName() const;
+        virtual void addOperand(const intrusive_ptr<Expression> &pExpression);
+
+        static intrusive_ptr<ExpressionNary> create();
+
+    private:
+        ExpressionSplit();
+    };
+
 
     class ExpressionSubstr :
         public ExpressionNary {
     public:
         // virtuals from ExpressionNary
         virtual ~ExpressionSubstr();
-        virtual Value evaluate(const Document& pDocument) const;
+        virtual intrusive_ptr<const Value> evaluate(
+            const intrusive_ptr<Document> &pDocument) const;
         virtual const char *getOpName() const;
         virtual void addOperand(const intrusive_ptr<Expression> &pExpression);
 
@@ -1046,7 +1086,8 @@ namespace mongo {
     public:
         // virtuals from ExpressionNary
         virtual ~ExpressionSubtract();
-        virtual Value evaluate(const Document& pDocument) const;
+        virtual intrusive_ptr<const Value> evaluate(
+            const intrusive_ptr<Document> &pDocument) const;
         virtual const char *getOpName() const;
         virtual void addOperand(const intrusive_ptr<Expression> &pExpression);
 
@@ -1062,7 +1103,8 @@ namespace mongo {
     public:
         // virtuals from ExpressionNary
         virtual ~ExpressionToLower();
-        virtual Value evaluate(const Document& pDocument) const;
+        virtual intrusive_ptr<const Value> evaluate(
+            const intrusive_ptr<Document> &pDocument) const;
         virtual const char *getOpName() const;
         virtual void addOperand(const intrusive_ptr<Expression> &pExpression);
 
@@ -1078,7 +1120,8 @@ namespace mongo {
     public:
         // virtuals from ExpressionNary
         virtual ~ExpressionToUpper();
-        virtual Value evaluate(const Document& pDocument) const;
+        virtual intrusive_ptr<const Value> evaluate(
+            const intrusive_ptr<Document> &pDocument) const;
         virtual const char *getOpName() const;
         virtual void addOperand(const intrusive_ptr<Expression> &pExpression);
 
@@ -1094,7 +1137,8 @@ namespace mongo {
     public:
         // virtuals from ExpressionNary
         virtual ~ExpressionWeek();
-        virtual Value evaluate(const Document& pDocument) const;
+        virtual intrusive_ptr<const Value> evaluate(
+            const intrusive_ptr<Document> &pDocument) const;
         virtual const char *getOpName() const;
         virtual void addOperand(const intrusive_ptr<Expression> &pExpression);
 
@@ -1110,7 +1154,8 @@ namespace mongo {
     public:
         // virtuals from ExpressionNary
         virtual ~ExpressionYear();
-        virtual Value evaluate(const Document& pDocument) const;
+        virtual intrusive_ptr<const Value> evaluate(
+            const intrusive_ptr<Document> &pDocument) const;
         virtual const char *getOpName() const;
         virtual void addOperand(const intrusive_ptr<Expression> &pExpression);
 
@@ -1134,7 +1179,7 @@ namespace mongo {
         return 0;
     }
 
-    inline Value ExpressionConstant::getValue() const {
+    inline intrusive_ptr<const Value> ExpressionConstant::getValue() const {
         return pValue;
     }
 
