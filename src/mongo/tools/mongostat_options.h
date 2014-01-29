@@ -46,6 +46,8 @@ namespace mongo {
         bool allFields;
         int sleep;
         std::string url;
+        std::string endpoint;
+        bool hasEndpoint;
     };
 
     extern MongoStatGlobalParams mongoStatGlobalParams;

@@ -48,14 +48,34 @@
 namespace mongo {
 
     class Stat : public Tool {
+    private:
+    	DBClientBase * endpointConn;
     public:
 
         Stat() : Tool() {
             _autoreconnect = true;
+            endpointConn = NULL;
+
         }
 
         virtual void printHelp( ostream & out ) {
             printMongoStatHelp(&out);
+        }
+
+        bool _initEndPoint(const string host){
+
+        	if ( endpointConn == NULL ){
+				string errmsg;
+				ConnectionString cs = ConnectionString::parse(host,errmsg);
+
+				if (!cs.isValid()){
+					cout << "ERROR:"<<errmsg;
+					return false;
+				}
+
+				endpointConn= cs.connect(errmsg);
+        	}
+        	return true;
         }
 
         BSONObj stats() {
@@ -97,6 +117,7 @@ namespace mongo {
         int run() {
             _statUtil.setAll(mongoStatGlobalParams.allFields);
             _statUtil.setSeconds(mongoStatGlobalParams.sleep);
+
             if (mongoStatGlobalParams.many)
                 return runMany();
             return runNormal();
@@ -176,6 +197,13 @@ namespace mongo {
                     if (mongoStatGlobalParams.showHeaders && rowNum % 10 == 0) {
                         printHeaders( out );
                     }
+
+                    //endpoint
+					if (mongoStatGlobalParams.hasEndpoint) {
+						cout << "HEY";
+						saveToEndpoint(out);
+
+					}
 
                     printData( out , out );
 
@@ -483,6 +511,14 @@ namespace mongo {
                     printHeaders( biggest );
                 }
 
+
+                //endpoint
+				if (mongoStatGlobalParams.hasEndpoint) {
+
+					saveToEndpoint(biggest);
+
+				}
+
                 //    rows
                 for ( unsigned i=0; i<rows.size(); i++ ) {
                     cout << setw( longestHost ) << rows[i].host << "\t";
@@ -497,6 +533,32 @@ namespace mongo {
             }
 
             return 0;
+        }
+
+        int saveToEndpoint(const BSONObj& o){
+        	//same logic from the top
+			string endpoint = mongoStatGlobalParams.endpoint;
+			StringSplitter splits(endpoint.c_str(), ",");
+			bool showPorts = false;
+
+			if (endpoint.find(":") != string::npos)
+				showPorts = true;
+
+			string host = "";
+			while (splits.more()) {
+				host = splits.next();
+				if (showPorts && host.find(":") == string::npos) {
+					host += ":27017";
+				}
+			}
+			if (_initEndPoint(host)){
+				//insert stats
+				endpointConn->insert("stats.data", o);
+				return 1;
+			}
+
+			return 0;
+
         }
 
         StatUtil _statUtil;

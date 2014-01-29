@@ -122,7 +122,6 @@ namespace mongo {
 
         double _seconds;
         bool _all;
-        
     };
 }
 

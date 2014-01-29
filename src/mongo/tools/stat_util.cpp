@@ -57,6 +57,7 @@ namespace mongo {
         return false;
     }
 
+
     BSONObj StatUtil::doRow( const BSONObj& a , const BSONObj& b ) {
         BSONObjBuilder result;
 

@@ -61,12 +61,13 @@ namespace mongo {
 
         options->addOptionChaining("all", "all", moe::Switch, "all optional fields");
 
+        options->addOptionChaining("endpoint", "endpoint", moe::String,
+                        "sends output to the defined endpoint");
+
         options->addOptionChaining("sleep", "sleep", moe::Int, "seconds to sleep between samples")
                                   .hidden()
                                   .setSources(moe::SourceCommandLine)
                                   .positional(1, 1);
-
-
         return Status::OK();
     }
 
@@ -138,6 +139,12 @@ namespace mongo {
         if (hasParam("discover")) {
             mongoStatGlobalParams.discover = true;
             mongoStatGlobalParams.many = true;
+        }
+
+        mongoStatGlobalParams.hasEndpoint = hasParam("endpoint");
+        if (mongoStatGlobalParams.hasEndpoint){
+
+        	mongoStatGlobalParams.endpoint = getParam("endpoint");
         }
 
         mongoStatGlobalParams.showHeaders = !hasParam("noheaders");
