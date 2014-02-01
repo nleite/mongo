@@ -961,6 +961,13 @@ namespace mongo {
         virtual Value evaluateInternal(Variables* vars) const;
         virtual const char *getOpName() const;
     };
+
+    class ExpressionSplit : public ExpressionFixedArity<ExpressionSplit, 2> {
+    public:
+        // virtuals from ExpressionNary
+        virtual Value evaluateInternal(Variables* vars) const;
+        virtual const char *getOpName() const;
+    };
 }
 
 

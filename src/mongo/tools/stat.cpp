@@ -200,9 +200,7 @@ namespace mongo {
 
                     //endpoint
 					if (mongoStatGlobalParams.hasEndpoint) {
-						cout << "HEY";
 						saveToEndpoint(out);
-
 					}
 
                     printData( out , out );

@@ -2341,4 +2341,39 @@ namespace {
         return "$year";
     }
 
+    /* ------------------------- ExpressionSplitString ----------------------------- */
+	Value ExpressionSplit::evaluateInternal(Variables* vars) const {
+		Value v0(vpOperand[0]->evaluateInternal(vars));
+		Value v1(vpOperand[1]->evaluateInternal(vars));
+
+		string splitable = v0.coerceToString();
+		string splitter = v1.coerceToString();
+		vector<Value> result;
+		/*check if 1st argument smaller (size) than 2nd
+		//uassert(11111, "2nd argument cannot be empty",
+		//                        !splitter.empty());
+		*/
+		if ( !splitter.empty() && splitable.length() > splitter.length() ){
+			size_t length = splitter.length();
+			size_t current = 0;
+			string::size_type next = -1;
+			do {
+				next = splitable.find(splitter, current);
+				Value toPush = Value(splitable.substr(current, next - current));
+				result.push_back(toPush);
+				current = next + length;
+
+			} while (next != string::npos);
+		}
+
+		if ( result.size() == 0 ){
+			result.push_back(Value(splitable));
+		}
+
+		return Value(result);
+	}
+	REGISTER_EXPRESSION("$split", ExpressionSplit::parse);
+	const char *ExpressionSplit::getOpName() const {
+		return "$split";
+	}
 }
