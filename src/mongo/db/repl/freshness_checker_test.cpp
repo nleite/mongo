@@ -157,7 +157,7 @@ TEST_F(FreshnessCheckerTest, TwoNodes) {
                                                                                << "h1"))));
 
     std::vector<HostAndPort> hosts;
-    hosts.push_back(config.getMemberAt(1).getHostAndPort());
+    hosts.push_back(config.getMemberAt(1).getInternalHostAndPort());
     const BSONObj freshRequest = makeFreshRequest(config, Timestamp(0, 0), 0);
 
     startTest(Timestamp(0, 0), config, 0, hosts);
@@ -201,7 +201,7 @@ TEST_F(FreshnessCheckerTest, ShuttingDown) {
                                                                                << "h1"))));
 
     std::vector<HostAndPort> hosts;
-    hosts.push_back(config.getMemberAt(1).getHostAndPort());
+    hosts.push_back(config.getMemberAt(1).getInternalHostAndPort());
 
     startTest(Timestamp(0, 0), config, 0, hosts);
     shutdownExecutorThread();
@@ -227,7 +227,7 @@ TEST_F(FreshnessCheckerTest, ElectNotElectingSelfWeAreNotFreshest) {
                                                                                << "h1"))));
 
     std::vector<HostAndPort> hosts;
-    hosts.push_back(config.getMemberAt(1).getHostAndPort());
+    hosts.push_back(config.getMemberAt(1).getInternalHostAndPort());
 
     const BSONObj freshRequest = makeFreshRequest(config, Timestamp(10, 0), 0);
 
@@ -279,7 +279,7 @@ TEST_F(FreshnessCheckerTest, ElectNotElectingSelfWeAreNotFreshestOpTime) {
                                                                                << "h1"))));
 
     std::vector<HostAndPort> hosts;
-    hosts.push_back(config.getMemberAt(1).getHostAndPort());
+    hosts.push_back(config.getMemberAt(1).getInternalHostAndPort());
 
     const BSONObj freshRequest = makeFreshRequest(config, Timestamp(0, 0), 0);
 
@@ -329,7 +329,7 @@ TEST_F(FreshnessCheckerTest, ElectWrongTypeInFreshnessResponse) {
                                                                                << "h1"))));
 
     std::vector<HostAndPort> hosts;
-    hosts.push_back(config.getMemberAt(1).getHostAndPort());
+    hosts.push_back(config.getMemberAt(1).getInternalHostAndPort());
 
     const BSONObj freshRequest = makeFreshRequest(config, Timestamp(10, 0), 0);
 
@@ -381,7 +381,7 @@ TEST_F(FreshnessCheckerTest, ElectVetoed) {
                                                                                << "h1"))));
 
     std::vector<HostAndPort> hosts;
-    hosts.push_back(config.getMemberAt(1).getHostAndPort());
+    hosts.push_back(config.getMemberAt(1).getInternalHostAndPort());
 
     const BSONObj freshRequest = makeFreshRequest(config, Timestamp(10, 0), 0);
 
@@ -452,7 +452,7 @@ TEST_F(FreshnessCheckerTest, ElectNotElectingSelfWeAreNotFreshestManyNodes) {
     std::vector<HostAndPort> hosts;
     for (ReplSetConfig::MemberIterator mem = ++config.membersBegin(); mem != config.membersEnd();
          ++mem) {
-        hosts.push_back(mem->getHostAndPort());
+        hosts.push_back(mem->getInternalHostAndPort());
     }
 
     const BSONObj freshRequest = makeFreshRequest(config, Timestamp(10, 0), 0);
@@ -512,10 +512,10 @@ TEST_F(FreshnessCheckerTest, ElectNotElectingSelfWeAreNotFreshestOpTimeManyNodes
     std::vector<HostAndPort> hosts;
     for (ReplSetConfig::MemberIterator mem = config.membersBegin(); mem != config.membersEnd();
          ++mem) {
-        if (HostAndPort("h0") == mem->getHostAndPort()) {
+        if (HostAndPort("h0") == mem->getInternalHostAndPort()) {
             continue;
         }
-        hosts.push_back(mem->getHostAndPort());
+        hosts.push_back(mem->getInternalHostAndPort());
     }
 
     const BSONObj freshRequest = makeFreshRequest(config, Timestamp(10, 0), 0);
@@ -585,7 +585,7 @@ TEST_F(FreshnessCheckerTest, ElectWrongTypeInFreshnessResponseManyNodes) {
     std::vector<HostAndPort> hosts;
     for (ReplSetConfig::MemberIterator mem = ++config.membersBegin(); mem != config.membersEnd();
          ++mem) {
-        hosts.push_back(mem->getHostAndPort());
+        hosts.push_back(mem->getInternalHostAndPort());
     }
 
     const BSONObj freshRequest = makeFreshRequest(config, Timestamp(10, 0), 0);
@@ -647,7 +647,7 @@ TEST_F(FreshnessCheckerTest, ElectVetoedManyNodes) {
     std::vector<HostAndPort> hosts;
     for (ReplSetConfig::MemberIterator mem = ++config.membersBegin(); mem != config.membersEnd();
          ++mem) {
-        hosts.push_back(mem->getHostAndPort());
+        hosts.push_back(mem->getInternalHostAndPort());
     }
 
     const BSONObj freshRequest = makeFreshRequest(config, Timestamp(10, 0), 0);
@@ -709,10 +709,10 @@ TEST_F(FreshnessCheckerTest, ElectVetoedAndTiedFreshnessManyNodes) {
     std::vector<HostAndPort> hosts;
     for (ReplSetConfig::MemberIterator mem = config.membersBegin(); mem != config.membersEnd();
          ++mem) {
-        if (HostAndPort("h0") == mem->getHostAndPort()) {
+        if (HostAndPort("h0") == mem->getInternalHostAndPort()) {
             continue;
         }
-        hosts.push_back(mem->getHostAndPort());
+        hosts.push_back(mem->getInternalHostAndPort());
     }
 
     const BSONObj freshRequest = makeFreshRequest(config, Timestamp(10, 0), 0);
@@ -787,7 +787,7 @@ TEST_F(FreshnessCheckerTest, ElectManyNodesNotAllRespond) {
     std::vector<HostAndPort> hosts;
     for (ReplSetConfig::MemberIterator mem = ++config.membersBegin(); mem != config.membersEnd();
          ++mem) {
-        hosts.push_back(mem->getHostAndPort());
+        hosts.push_back(mem->getInternalHostAndPort());
     }
 
     const Timestamp lastOpTimeApplied(10, 0);
@@ -851,7 +851,7 @@ public:
         for (ReplSetConfig::MemberIterator mem = ++config.membersBegin();
              mem != config.membersEnd();
              ++mem) {
-            hosts.push_back(mem->getHostAndPort());
+            hosts.push_back(mem->getInternalHostAndPort());
         }
 
         _checker.reset(

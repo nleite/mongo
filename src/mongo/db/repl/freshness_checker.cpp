@@ -84,7 +84,7 @@ std::vector<RemoteCommandRequest> FreshnessChecker::Algorithm::getRequests() con
     freshCmdBuilder.append("replSetFresh", 1);
     freshCmdBuilder.append("set", _rsConfig.getReplSetName());
     freshCmdBuilder.append("opTime", Date_t::fromMillisSinceEpoch(_lastOpTimeApplied.asLL()));
-    freshCmdBuilder.append("who", selfConfig.getHostAndPort().toString());
+    freshCmdBuilder.append("who", selfConfig.getInternalHostAndPort().toString());
     freshCmdBuilder.appendIntOrLL("cfgver", _rsConfig.getConfigVersion());
     freshCmdBuilder.append("id", selfConfig.getId());
     const BSONObj replSetFreshCmd = freshCmdBuilder.obj();
@@ -92,7 +92,7 @@ std::vector<RemoteCommandRequest> FreshnessChecker::Algorithm::getRequests() con
     std::vector<RemoteCommandRequest> requests;
     for (std::vector<HostAndPort>::const_iterator it = _targets.begin(); it != _targets.end();
          ++it) {
-        invariant(*it != selfConfig.getHostAndPort());
+        invariant(*it != selfConfig.getInternalHostAndPort());
         requests.push_back(RemoteCommandRequest(
             *it,
             "admin",
@@ -127,7 +127,7 @@ void FreshnessChecker::Algorithm::processResponse(const RemoteCommandRequest& re
 
     Status status = Status::OK();
 
-    if (!response.isOK() || !((status = getStatusFromCommandResult(response.data)).isOK())) {
+    if (!response.isOK() || !((status = getStatusFromCommandResult(response.getValue().data)).isOK())) {
         if (votingMember) {
             ++_failedVoterResponses;
             if (hadTooManyFailedVoterResponses()) {

@@ -273,12 +273,12 @@ ReplSetConfig _getConfigWithMemberRemoved(const ReplSetConfig& oldConfig,
     for (ReplSetConfig::MemberIterator member = oldConfig.membersBegin();
          member != oldConfig.membersEnd();
          ++member) {
-        if (member->getHostAndPort() == toRemove) {
+        if (member->getInternalHostAndPort() == toRemove) {
             continue;
         }
 
         membersBuilder.append(
-            BSON("_id" << member->getId() << "host" << member->getHostAndPort().toString()));
+            BSON("_id" << member->getId() << "host" << member->getInternalHostAndPort().toString()));
     }
 
     membersBuilder.done();

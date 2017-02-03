@@ -83,7 +83,7 @@ ReplSetConfig assertMakeRSConfig(const BSONObj& configBson) {
 const BSONObj makeElectRequest(const ReplSetConfig& rsConfig, int selfIndex) {
     const MemberConfig& myConfig = rsConfig.getMemberAt(selfIndex);
     return BSON("replSetElect" << 1 << "set" << rsConfig.getReplSetName() << "who"
-                               << myConfig.getHostAndPort().toString()
+                               << myConfig.getInternalHostAndPort().toString()
                                << "whoid"
                                << myConfig.getId()
                                << "cfgver"
@@ -170,7 +170,7 @@ TEST_F(ElectCmdRunnerTest, TwoNodes) {
                                                                                      << "h1"))));
 
     std::vector<HostAndPort> hosts;
-    hosts.push_back(config.getMemberAt(1).getHostAndPort());
+    hosts.push_back(config.getMemberAt(1).getInternalHostAndPort());
 
     const BSONObj electRequest = makeElectRequest(config, 0);
 
@@ -197,6 +197,7 @@ TEST_F(ElectCmdRunnerTest, TwoNodes) {
 
 TEST_F(ElectCmdRunnerTest, ShuttingDown) {
     // Two nodes, we are node h1.  Shutdown happens while we're scheduling remote commands.
+<<<<<<< HEAD
     ReplSetConfig config = assertMakeRSConfig(BSON("_id"
                                                    << "rs0"
                                                    << "version"
@@ -206,9 +207,18 @@ TEST_F(ElectCmdRunnerTest, ShuttingDown) {
                                                                             << "h0")
                                                                  << BSON("_id" << 2 << "host"
                                                                                << "h1"))));
+=======
+    ReplicaSetConfig config = assertMakeRSConfig(BSON("_id"
+                                                      << "rs0"
+                                                      << "version"
+                                                      << 1
+                                                      << "members"
+                                                      << BSON_ARRAY(BSON("_id" << 1 << "host" << "h0")
+                                                                    << BSON("_id" << 2 << "host" << "h1"))));
+>>>>>>> SERVER-1889 - adding `getInternalHostAndPort()` methods to support internal nic - added tests
 
     std::vector<HostAndPort> hosts;
-    hosts.push_back(config.getMemberAt(1).getHostAndPort());
+    hosts.push_back(config.getMemberAt(1).getInternalHostAndPort());
 
     ElectCmdRunner electCmdRunner;
     StatusWith<executor::TaskExecutor::EventHandle> evh(ErrorCodes::InternalError, "Not set");
@@ -242,7 +252,7 @@ public:
         for (ReplSetConfig::MemberIterator mem = ++config.membersBegin();
              mem != config.membersEnd();
              ++mem) {
-            hosts.push_back(mem->getHostAndPort());
+            hosts.push_back(mem->getInternalHostAndPort());
         }
 
         _checker.reset(new ElectCmdRunner::Algorithm(config, selfConfigIndex, hosts, OID()));
