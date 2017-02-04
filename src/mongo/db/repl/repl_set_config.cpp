@@ -482,7 +482,7 @@ Status ReplSetConfig::validate() const {
                                             << "."
                                             << MemberConfig::kHostFieldName
                                             << " == "
-                                            << memberI.HostAndPort().toString());
+                                            << memberI.getHostAndPort().toString());
             }
             // validating that the internal host is not duplicated in the configuration
             if (!memberI.getInternalHostAndPort().empty() &&
