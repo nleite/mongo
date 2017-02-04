@@ -442,8 +442,9 @@ Status ReplSetConfig::validate() const {
             ++electableCount;
         }
         for (size_t j = 0; j < _members.size(); ++j) {
-            if (i == j)
+            if (i == j) {
                 continue;
+            }
             const MemberConfig& memberJ = _members[j];
             if (memberI.getId() == memberJ.getId()) {
                 return Status(ErrorCodes::BadValue,
@@ -481,11 +482,11 @@ Status ReplSetConfig::validate() const {
                                             << "."
                                             << MemberConfig::kHostFieldName
                                             << " == "
-                                            << memberI.HostAndPort().toString());
+                                            << memberI.getHostAndPort().toString());
             }
             // validating that the internal host is not duplicated in the configuration
             if (!memberI.getInternalHostAndPort().empty() &&
-                memberI.getInternalHostAndPort() == memberJ.getHostInternalAndPort() ) {
+                memberI.getInternalHostAndPort() == memberJ.getInternalHostAndPort() ) {
                  return Status(ErrorCodes::BadValue,
                               str::stream() << "Found two member configurations with same "
                                             << MemberConfig::kHostInternalFieldName
@@ -504,6 +505,7 @@ Status ReplSetConfig::validate() const {
                                             << " == "
                                             << memberI.getInternalHostAndPort().toString());
 
+            }
         }
     }
 
