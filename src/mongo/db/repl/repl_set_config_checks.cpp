@@ -93,8 +93,7 @@ Status checkElectable(const ReplSetConfig& newConfig, int configIndex) {
     const MemberConfig& myConfig = newConfig.getMemberAt(configIndex);
     if (!myConfig.isElectable()) {
         return Status(ErrorCodes::NodeNotElectable,
-                      str::stream() << "This node, "
-                                    << myConfig.getInternalHostAndPort().toString()
+                      str::stream() << "This node, " << myConfig.getInternalHostAndPort().toString()
                                     << ", with _id "
                                     << myConfig.getId()
                                     << " is not electable under the new configuration version "
@@ -197,7 +196,8 @@ Status validateOldAndNewConfigsCompatible(const ReplSetConfig& oldConfig,
 
     //
     // For every member config mNew in newConfig, if there exists member config mOld
-    // in oldConfig such that mNew.getInternalHostAndPort() == mOld.getInternalHostAndPort(), it is required
+    // in oldConfig such that mNew.getInternalHostAndPort() == mOld.getInternalHostAndPort(), it is
+    // required
     // that mNew.getId() == mOld.getId().
     //
     // Also, one may not use reconfig to change the value of the buildIndexes or
@@ -210,7 +210,8 @@ Status validateOldAndNewConfigsCompatible(const ReplSetConfig& oldConfig,
              mOld != oldConfig.membersEnd();
              ++mOld) {
             const bool idsEqual = mOld->getId() == mNew->getId();
-            const bool hostsEqual = mOld->getInternalHostAndPort() == mNew->getInternalHostAndPort();
+            const bool hostsEqual =
+                mOld->getInternalHostAndPort() == mNew->getInternalHostAndPort();
             if (!idsEqual && !hostsEqual) {
                 continue;
             }

@@ -213,9 +213,16 @@ TEST_F(ElectCmdRunnerTest, ShuttingDown) {
                                                       << "version"
                                                       << 1
                                                       << "members"
+<<<<<<< HEAD
                                                       << BSON_ARRAY(BSON("_id" << 1 << "host" << "h0")
                                                                     << BSON("_id" << 2 << "host" << "h1"))));
 >>>>>>> SERVER-1889 - adding `getInternalHostAndPort()` methods to support internal nic - added tests
+=======
+                                                      << BSON_ARRAY(BSON("_id" << 1 << "host"
+                                                                               << "h0")
+                                                                    << BSON("_id" << 2 << "host"
+                                                                                  << "h1"))));
+>>>>>>> SERVER-1889 small format and naming fix
 
     std::vector<HostAndPort> hosts;
     hosts.push_back(config.getMemberAt(1).getInternalHostAndPort());
