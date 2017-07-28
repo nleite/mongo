@@ -197,7 +197,6 @@ TEST_F(ElectCmdRunnerTest, TwoNodes) {
 
 TEST_F(ElectCmdRunnerTest, ShuttingDown) {
     // Two nodes, we are node h1.  Shutdown happens while we're scheduling remote commands.
-<<<<<<< HEAD
     ReplSetConfig config = assertMakeRSConfig(BSON("_id"
                                                    << "rs0"
                                                    << "version"
@@ -207,23 +206,6 @@ TEST_F(ElectCmdRunnerTest, ShuttingDown) {
                                                                             << "h0")
                                                                  << BSON("_id" << 2 << "host"
                                                                                << "h1"))));
-=======
-    ReplicaSetConfig config = assertMakeRSConfig(BSON("_id"
-                                                      << "rs0"
-                                                      << "version"
-                                                      << 1
-                                                      << "members"
-<<<<<<< HEAD
-                                                      << BSON_ARRAY(BSON("_id" << 1 << "host" << "h0")
-                                                                    << BSON("_id" << 2 << "host" << "h1"))));
->>>>>>> SERVER-1889 - adding `getInternalHostAndPort()` methods to support internal nic - added tests
-=======
-                                                      << BSON_ARRAY(BSON("_id" << 1 << "host"
-                                                                               << "h0")
-                                                                    << BSON("_id" << 2 << "host"
-                                                                                  << "h1"))));
->>>>>>> SERVER-1889 small format and naming fix
-
     std::vector<HostAndPort> hosts;
     hosts.push_back(config.getMemberAt(1).getInternalHostAndPort());
 

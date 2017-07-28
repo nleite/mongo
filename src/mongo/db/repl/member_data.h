@@ -139,7 +139,7 @@ public:
         return _isSelf;
     }
 
-    HostAndPort getHostAndPort() const {
+    HostAndPort getInternalHostAndPort() const {
         return _hostAndPort;
     }
 
@@ -221,7 +221,7 @@ public:
         _isSelf = isSelf;
     }
 
-    void setHostAndPort(HostAndPort hostAndPort) {
+    void setInternalHostAndPort(HostAndPort hostAndPort) {
         _hostAndPort = hostAndPort;
     }
 

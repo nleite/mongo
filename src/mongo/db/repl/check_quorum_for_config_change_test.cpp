@@ -181,7 +181,7 @@ TEST_F(CheckQuorumForInitiate, QuorumCheckFailedDueToSeveralDownNodes) {
     // In this test, "we" are host "h3:1".  All other nodes time out on
     // their heartbeat request, and so the quorum check for initiate
     // will fail because some members were unavailable.
-<<<<<<< HEAD
+
     ReplSetConfig config = assertMakeRSConfig(BSON("_id"
                                                    << "rs0"
                                                    << "version"
@@ -197,31 +197,6 @@ TEST_F(CheckQuorumForInitiate, QuorumCheckFailedDueToSeveralDownNodes) {
                                                                                << "h4:1")
                                                                  << BSON("_id" << 5 << "host"
                                                                                << "h5:1"))));
-=======
-    ReplicaSetConfig config = assertMakeRSConfig(BSON("_id"
-                                                      << "rs0"
-                                                      << "version"
-                                                      << 1
-                                                      << "members"
-<<<<<<< HEAD
-                                                      << BSON_ARRAY(BSON("_id" << 1 << "host" << "h1:1")
-                                                                    << BSON("_id" << 2 << "host" << "h2:1")
-                                                                    << BSON("_id" << 3 << "host" << "h3:1")
-                                                                    << BSON("_id" << 4 << "host" << "h4:1")
-                                                                    << BSON("_id" << 5 << "host" << "h5:1"))));
->>>>>>> SERVER-1889 - adding `getInternalHostAndPort()` methods to support internal nic - added tests
-=======
-                                                      << BSON_ARRAY(BSON("_id" << 1 << "host"
-                                                                               << "h1:1")
-                                                                    << BSON("_id" << 2 << "host"
-                                                                                  << "h2:1")
-                                                                    << BSON("_id" << 3 << "host"
-                                                                                  << "h3:1")
-                                                                    << BSON("_id" << 4 << "host"
-                                                                                  << "h4:1")
-                                                                    << BSON("_id" << 5 << "host"
-                                                                                  << "h5:1"))));
->>>>>>> SERVER-1889 small format and naming fix
     startQuorumCheck(config, 2);
     getNet()->enterNetwork();
     const Date_t startDate = getNet()->now();

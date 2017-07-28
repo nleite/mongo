@@ -291,13 +291,8 @@ HostAndPort TopologyCoordinatorImpl::chooseNewSyncSource(Date_t now,
                 // Candidates cannot be excessively behind.
                 if (it->getHeartbeatAppliedOpTime() < oldestSyncOpTime) {
                     LOG(2) << "Cannot select sync source because it is too far behind."
-<<<<<<< HEAD
-                           << "Latest optime of sync candidate " << itMemberConfig.getHostAndPort()
-                           << ": " << it->getHeartbeatAppliedOpTime()
-=======
                            << "Latest optime of sync candidate " << itMemberConfig.getInternalHostAndPort()
-                           << ": " << it->getAppliedOpTime()
->>>>>>> changing coordinator requests
+                           << ": " << it->getLastAppliedOpTime()
                            << ", oldest acceptable optime: " << oldestSyncOpTime;
                     continue;
                 }
@@ -321,13 +316,8 @@ HostAndPort TopologyCoordinatorImpl::chooseNewSyncSource(Date_t now,
                 LOG(1) << "Cannot select sync source equal to or behind our last fetched optime. "
                        << "My last fetched oplog optime: " << lastOpTimeFetched.toBSON()
                        << ", latest oplog optime of sync candidate "
-<<<<<<< HEAD
-                       << itMemberConfig.getHostAndPort() << ": "
-                       << it->getHeartbeatAppliedOpTime().toBSON();
-=======
                        << itMemberConfig.getInternalHostAndPort() << ": "
-                       << it->getAppliedOpTime().toBSON();
->>>>>>> changing coordinator requests
+                       << it->getLastAppliedOpTime().toBSON();
                 continue;
             }
             // Candidate cannot be more latent than anything we've already considered.
@@ -375,8 +365,7 @@ HostAndPort TopologyCoordinatorImpl::chooseNewSyncSource(Date_t now,
 bool TopologyCoordinatorImpl::_memberIsBlacklisted(const MemberConfig& memberConfig,
                                                    Date_t now) const {
     std::map<HostAndPort, Date_t>::const_iterator blacklisted =
-        _syncSourceBlacklist.find(memberConfig.getInternalHostAndPort()) ||
-        _syncSourceBlacklist.find(memberConfig.getHostAndPort());
+        _syncSourceBlacklist.find(memberConfig.getInternalHostAndPort());
     if (blacklisted != _syncSourceBlacklist.end()) {
         if (blacklisted->second > now) {
             return true;
@@ -426,7 +415,7 @@ void TopologyCoordinatorImpl::prepareSyncFromResponse(const HostAndPort& target,
     int targetIndex = 0;
     for (ReplSetConfig::MemberIterator it = _rsConfig.membersBegin(); it != _rsConfig.membersEnd();
          ++it) {
-        if (it->getHostAndPort() == target) {
+        if (it->getInternalHostAndPort() == target) {
             targetConfig = it;
             break;
         }
@@ -579,7 +568,7 @@ bool TopologyCoordinatorImpl::_shouldVetoMember(
         // hbinfo is not updated for ourself, so if we are primary we have to check the
         // primary's last optime separately
         *errmsg = str::stream() << "I am already primary, "
-                                << _rsConfig.getMemberAt(hopefulIndex).getHostAndPort().toString()
+                                << _rsConfig.getMemberAt(hopefulIndex).getInternalHostAndPort().toString()
                                 << " can try again once I've stepped down";
         return true;
     }
@@ -589,9 +578,9 @@ bool TopologyCoordinatorImpl::_shouldVetoMember(
          _memberData.at(hopefulIndex).getHeartbeatAppliedOpTime())) {
         // other members might be aware of more up-to-date nodes
         *errmsg =
-            str::stream() << _rsConfig.getMemberAt(hopefulIndex).getHostAndPort().toString()
+            str::stream() << _rsConfig.getMemberAt(hopefulIndex).getInternalHostAndPort().toString()
                           << " is trying to elect itself but "
-                          << _rsConfig.getMemberAt(_currentPrimaryIndex).getHostAndPort().toString()
+                          << _rsConfig.getMemberAt(_currentPrimaryIndex).getInternalHostAndPort().toString()
                           << " is already primary and more up-to-date";
         return true;
     }
@@ -601,9 +590,9 @@ bool TopologyCoordinatorImpl::_shouldVetoMember(
         const MemberConfig& priorityMember = _rsConfig.getMemberAt(highestPriorityIndex);
 
         if (priorityMember.getPriority() > hopefulMember.getPriority()) {
-            *errmsg = str::stream() << hopefulMember.getHostAndPort().toString()
+            *errmsg = str::stream() << hopefulMember.getInternalHostAndPort().toString()
                                     << " has lower priority of " << hopefulMember.getPriority()
-                                    << " than " << priorityMember.getHostAndPort().toString()
+                                    << " than " << priorityMember.getInternalHostAndPort().toString()
                                     << " which has a priority of " << priorityMember.getPriority();
             return true;
         }
@@ -613,7 +602,7 @@ bool TopologyCoordinatorImpl::_shouldVetoMember(
     reason &= ~RefusesToStand;
     if (reason) {
         *errmsg = str::stream() << "I don't think "
-                                << _rsConfig.getMemberAt(hopefulIndex).getHostAndPort().toString()
+                                << _rsConfig.getMemberAt(hopefulIndex).getInternalHostAndPort().toString()
                                 << " is electable because the "
                                 << _getUnelectableReasonString(reason);
         return true;
@@ -666,30 +655,30 @@ void TopologyCoordinatorImpl::prepareElectResponse(
         log() << "replSetElect couldn't find member with id " << args.whoid;
         vote = -10000;
     } else if (_iAmPrimary()) {
-        log() << "I am already primary, " << hopeful->getHostAndPort().toString()
+        log() << "I am already primary, " << hopeful->getInternalHostAndPort().toString()
               << " can try again once I've stepped down";
         vote = -10000;
     } else if (primary) {
-        log() << hopeful->getHostAndPort().toString() << " is trying to elect itself but "
-              << primary->getHostAndPort().toString() << " is already primary";
+        log() << hopeful->getInternalHostAndPort().toString() << " is trying to elect itself but "
+              << primary->getInternalHostAndPort().toString() << " is already primary";
         vote = -10000;
     } else if (highestPriority && highestPriority->getPriority() > hopeful->getPriority()) {
         // TODO(spencer): What if the lower-priority member is more up-to-date?
-        log() << hopeful->getHostAndPort().toString() << " has lower priority than "
-              << highestPriority->getHostAndPort().toString();
+        log() << hopeful->getInternalHostAndPort().toString() << " has lower priority than "
+              << highestPriority->getInternalHostAndPort().toString();
         vote = -10000;
     } else if (_voteLease.when + VoteLease::leaseTime >= now && _voteLease.whoId != args.whoid) {
-        log() << "replSet voting no for " << hopeful->getHostAndPort().toString() << "; voted for "
+        log() << "replSet voting no for " << hopeful->getInternalHostAndPort().toString() << "; voted for "
               << _voteLease.whoHostAndPort.toString() << ' '
               << durationCount<Seconds>(now - _voteLease.when) << " secs ago";
     } else {
         _voteLease.when = now;
         _voteLease.whoId = args.whoid;
-        _voteLease.whoHostAndPort = hopeful->getHostAndPort();
+        _voteLease.whoHostAndPort = hopeful->getInternalHostAndPort();
         vote = _selfConfig().getNumVotes();
         invariant(hopeful->getId() == args.whoid);
         if (vote > 0) {
-            log() << "replSetElect voting yea for " << hopeful->getHostAndPort().toString() << " ("
+            log() << "replSetElect voting yea for " << hopeful->getInternalHostAndPort().toString() << " ("
                   << args.whoid << ')';
         }
     }
@@ -907,7 +896,7 @@ std::pair<ReplSetHeartbeatArgs, Milliseconds> TopologyCoordinatorImpl::prepareHe
         hbArgs.setConfigVersion(_rsConfig.getConfigVersion());
         if (_selfIndex >= 0) {
             const MemberConfig& me = _selfConfig();
-            hbArgs.setSenderHost(me.getHostAndPort());
+            hbArgs.setSenderHost(me.getInternalHostAndPort());
             hbArgs.setSenderId(me.getId());
         }
     } else {
@@ -941,7 +930,7 @@ std::pair<ReplSetHeartbeatArgsV1, Milliseconds> TopologyCoordinatorImpl::prepare
         if (_selfIndex >= 0) {
             const MemberConfig& me = _selfConfig();
             hbArgs.setSenderId(me.getId());
-            hbArgs.setSenderHost(me.getHostAndPort());
+            hbArgs.setSenderHost(me.getInternalHostAndPort());
         }
         hbArgs.setTerm(_term);
     } else {
@@ -1180,7 +1169,7 @@ std::vector<HostAndPort> TopologyCoordinatorImpl::getHostsWrittenTo(const OpTime
             continue;
         }
 
-        hosts.push_back(memberData.getHostAndPort());
+        hosts.push_back(memberData.getInternalHostAndPort());
     }
     return hosts;
 }
@@ -1234,7 +1223,7 @@ void TopologyCoordinatorImpl::resetAllMemberTimeouts(Date_t now) {
 void TopologyCoordinatorImpl::resetMemberTimeouts(
     Date_t now, const stdx::unordered_set<HostAndPort>& member_set) {
     for (auto&& memberData : _memberData) {
-        if (member_set.count(memberData.getHostAndPort()))
+        if (member_set.count(memberData.getInternalHostAndPort()))
             memberData.updateLiveness(now);
     }
 }
@@ -1398,7 +1387,7 @@ HeartbeatResponseAction TopologyCoordinatorImpl::_updatePrimaryFromHBData(
                     }
                     _stepDownPending = true;
                     log() << "Stepping down self (priority " << currentPrimaryMember.getPriority()
-                          << ") because " << highestPriorityMember.getHostAndPort()
+                          << ") because " << highestPriorityMember.getInternalHostAndPort()
                           << " has higher priority " << highestPriorityMember.getPriority()
                           << " and is only "
                           << (latestOpTime.getSecs() - highestPriorityMemberOptime.getSecs())
@@ -1414,7 +1403,7 @@ HeartbeatResponseAction TopologyCoordinatorImpl::_updatePrimaryFromHBData(
                     // an inter-election sleep period, ask the current primary to step down.
                     // This is an optimization, because the remote primary will almost certainly
                     // notice this node's electability promptly, via its own heartbeat process.
-                    log() << "Requesting that " << currentPrimaryMember.getHostAndPort()
+                    log() << "Requesting that " << currentPrimaryMember.getInternalHostAndPort()
                           << " (priority " << currentPrimaryMember.getPriority()
                           << ") step down because I have higher priority "
                           << highestPriorityMember.getPriority() << " and am only "
@@ -1811,7 +1800,7 @@ void TopologyCoordinatorImpl::prepareStatusResponse(const ReplSetStatusArgs& rsS
             // add self
             BSONObjBuilder bb;
             bb.append("_id", _selfConfig().getId());
-            bb.append("name", _selfConfig().getHostAndPort().toString());
+            bb.append("name", _selfConfig().getInternalHostAndPort().toString());
             bb.append("health", 1.0);
             bb.append("state", static_cast<int>(myState.s));
             bb.append("stateStr", myState.toString());
@@ -1847,7 +1836,7 @@ void TopologyCoordinatorImpl::prepareStatusResponse(const ReplSetStatusArgs& rsS
             const MemberConfig& itConfig = _rsConfig.getMemberAt(itIndex);
             BSONObjBuilder bb;
             bb.append("_id", itConfig.getId());
-            bb.append("name", itConfig.getHostAndPort().toString());
+            bb.append("name", itConfig.getInternalHostAndPort().toString());
             double h = it->getHealth();
             bb.append("health", h);
             const MemberState state = it->getState();
@@ -1880,7 +1869,7 @@ void TopologyCoordinatorImpl::prepareStatusResponse(const ReplSetStatusArgs& rsS
             }
             bb.appendDate("lastHeartbeat", it->getLastHeartbeat());
             bb.appendDate("lastHeartbeatRecv", it->getLastHeartbeatRecv());
-            Milliseconds ping = _getPing(itConfig.getHostAndPort());
+            Milliseconds ping = _getPing(itConfig.getInternalHostAndPort());
             if (ping != UninitializedPing) {
                 bb.append("pingMs", durationCount<Milliseconds>(ping));
                 std::string s = it->getLastHeartbeatMsg();
@@ -2014,7 +2003,7 @@ void TopologyCoordinatorImpl::fillMemberData(BSONObjBuilder* result) {
             } else {
                 entry.append("optime", lastDurableOpTime.getTimestamp());
             }
-            entry.append("host", memberData.getHostAndPort().toString());
+            entry.append("host", memberData.getInternalHostAndPort().toString());
             if (_selfIndex >= 0) {
                 const int memberId = memberData.getMemberId();
                 invariant(memberId >= 0);
@@ -2178,7 +2167,7 @@ void TopologyCoordinatorImpl::_updateHeartbeatDataForReconfig(const ReplSetConfi
         MemberData newHeartbeatData;
         for (auto&& oldMemberData : oldHeartbeats) {
             if ((oldMemberData.getMemberId() == newMemberConfig.getId() &&
-                 oldMemberData.getHostAndPort() == newMemberConfig.getHostAndPort()) ||
+                 oldMemberData.getInternalHostAndPort() == newMemberConfig.getInternalHostAndPort()) ||
                 (index == selfIndex && oldMemberData.isSelf())) {
                 // This member existed in the old config with the same member ID and
                 // HostAndPort, so copy its heartbeat data over.
@@ -2188,7 +2177,7 @@ void TopologyCoordinatorImpl::_updateHeartbeatDataForReconfig(const ReplSetConfi
         }
         newHeartbeatData.setConfigIndex(index);
         newHeartbeatData.setIsSelf(index == selfIndex);
-        newHeartbeatData.setHostAndPort(newMemberConfig.getHostAndPort());
+        newHeartbeatData.setInternalHostAndPort(newMemberConfig.getInternalHostAndPort());
         newHeartbeatData.setMemberId(newMemberConfig.getId());
         _memberData.push_back(newHeartbeatData);
     }
@@ -2486,7 +2475,7 @@ std::vector<HostAndPort> TopologyCoordinatorImpl::getMaybeUpHostAndPorts() const
             continue;  // skip DOWN nodes
         }
 
-        upHosts.push_back(_rsConfig.getMemberAt(itIndex).getHostAndPort());
+        upHosts.push_back(_rsConfig.getMemberAt(itIndex).getInternalHostAndPort());
     }
     return upHosts;
 }

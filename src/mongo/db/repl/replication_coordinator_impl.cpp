@@ -2770,7 +2770,7 @@ Status ReplicationCoordinatorImpl::processHandshake(OperationContext* opCtx,
     }
 
     memberData = _topCoord->addSlaveMemberData(handshake.getRid());
-    memberData->setHostAndPort(_externalState->getClientHostAndPort(opCtx));
+    memberData->setInternalHostAndPort(_externalState->getClientHostAndPort(opCtx));
 
     return Status::OK();
 }
