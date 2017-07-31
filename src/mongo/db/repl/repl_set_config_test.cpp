@@ -1823,7 +1823,7 @@ TEST(ReplSetConfig, ReplSetId) {
 }
 
 TEST(ReplicaSetConfig, ReplSetHostInternal) {
-    ReplicaSetConfig configLocal;
+    ReplSetConfig configLocal;
     auto status =
         configLocal.initializeForInitiate(BSON("_id"
                                                << "rs0"
@@ -1845,7 +1845,7 @@ TEST(ReplicaSetConfig, ReplSetHostInternal) {
 
 TEST(ReplicaSetConfig, ReplSetOnlyHostInternal) {
     // Configuration initialized having only hostinternal should fail
-    ReplicaSetConfig configLocal;
+    ReplSetConfig configLocal;
     auto status =
         configLocal.initializeForInitiate(BSON("_id"
                                                << "rs0"

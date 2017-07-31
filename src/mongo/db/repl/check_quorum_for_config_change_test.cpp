@@ -164,7 +164,7 @@ TEST_F(CheckQuorumForInitiate, QuorumCheckCanceledByShutdown) {
 }
 
 TEST_F(CheckQuorumForInitiate, ValidSingleNodeInternalHostSet) {
-    ReplicaSetConfig config = assertMakeRSConfig(BSON("_id"
+    ReplSetConfig config = assertMakeRSConfig(BSON("_id"
                                                       << "rs0"
                                                       << "version"
                                                       << 1

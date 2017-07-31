@@ -78,7 +78,7 @@ TEST(MemberConfig, ParseFailsWithMissingIdField) {
 }
 
 TEST(MemberConfig, ParseFailsWithJustInternalHost) {
-    ReplicaSetTagConfig tagConfig;
+    ReplSetTagConfig tagConfig;
     MemberConfig mc;
     ASSERT_EQUALS(ErrorCodes::NoSuchKey,
                   mc.initialize(BSON("hostInternal"
